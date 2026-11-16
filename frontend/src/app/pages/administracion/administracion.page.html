@@ -1,0 +1,805 @@
+<div class="mx-auto max-w-6xl space-y-8">
+  <header class="animar-entrada">
+    <h1 class="text-2xl font-bold text-slate-900">Administración</h1>
+    <p class="mt-1 text-sm text-slate-500">
+      Gestión de programas de posgrado (maestrías y doctorados), directores de posgrado, asignación de docentes, invitaciones institucionales y tipos de artículo.
+    </p>
+  </header>
+
+  <!-- SECCIÓN 1: GESTIÓN DE POSGRADOS (MAESTRÍAS Y DOCTORADOS) -->
+  <section class="tarjeta animar-entrada animar-entrada-1 overflow-hidden">
+    <div class="flex items-center justify-between border-b border-slate-100 px-6 py-4">
+      <div class="flex items-center gap-2.5">
+        <span class="flex h-8 w-8 items-center justify-center rounded-lg bg-indigo-50 text-indigo-600">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 14l9-5-9-5-9 5 9 5z" />
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z" />
+          </svg>
+        </span>
+        <div>
+          <h2 class="text-sm font-semibold text-slate-900">Programas de Posgrado (Maestrías y Doctorados)</h2>
+          <p class="text-xs text-slate-500">
+            Administre la oferta académica de posgrados. Al dar de baja un posgrado con tesis publicadas se preserva su historial y se desasigna de los profesores.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid gap-6 p-6 lg:grid-cols-12">
+      <!-- Formulario para agregar / editar posgrado -->
+      <div class="space-y-4 lg:col-span-5 border-b pb-6 lg:border-b-0 lg:border-r lg:pr-6 border-slate-100">
+        @if (posgradoEnEdicion()) {
+          <div class="rounded-xl bg-violet-50/60 p-4 ring-1 ring-violet-200 space-y-3">
+            <div class="flex items-center justify-between">
+              <h3 class="text-xs font-bold uppercase tracking-wider text-violet-900">Modificar Posgrado</h3>
+              <button
+                type="button"
+                (click)="cancelarEdicionPosgrado()"
+                class="text-xs text-slate-500 hover:text-slate-800 underline cursor-pointer"
+              >
+                Cancelar
+              </button>
+            </div>
+            <div>
+              <label class="campo-label" for="edicion-nivel">Nivel académico</label>
+              <select
+                id="edicion-nivel"
+                [value]="edicionNivel()"
+                (change)="edicionNivel.set($any($event.target).value)"
+                class="campo"
+              >
+                <option value="Maestría">Maestría</option>
+                <option value="Doctorado">Doctorado</option>
+              </select>
+            </div>
+            <div>
+              <label class="campo-label" for="edicion-nombre">Nombre del programa</label>
+              <input
+                id="edicion-nombre"
+                type="text"
+                placeholder="Nombre del programa"
+                [value]="edicionNombre()"
+                (input)="edicionNombre.set($any($event.target).value)"
+                class="campo"
+              />
+            </div>
+            @if (errorEdicion()) {
+              <p class="rounded-lg bg-rose-50 px-3 py-2 text-xs text-rose-800 ring-1 ring-rose-200">{{ errorEdicion() }}</p>
+            }
+            <div class="flex items-center gap-2 pt-1">
+              <button
+                type="button"
+                (click)="guardarEdicionPosgrado()"
+                [disabled]="guardandoEdicion()"
+                class="boton-primario !py-2 !text-xs flex-1"
+              >
+                @if (guardandoEdicion()) {
+                  Guardando…
+                } @else {
+                  Guardar cambios
+                }
+              </button>
+              <button
+                type="button"
+                (click)="cancelarEdicionPosgrado()"
+                class="boton-secundario !py-2 !text-xs"
+              >
+                Cancelar
+              </button>
+            </div>
+          </div>
+        } @else {
+          <h3 class="text-xs font-bold uppercase tracking-wider text-slate-500">Registrar nuevo posgrado</h3>
+          <div>
+            <label class="campo-label" for="nuevo-nivel-posgrado">Nivel de posgrado</label>
+            <select
+              id="nuevo-nivel-posgrado"
+              [value]="nuevoPosgradoNivel()"
+              (change)="nuevoPosgradoNivel.set($any($event.target).value)"
+              class="campo"
+            >
+              <option value="Maestría">Maestría</option>
+              <option value="Doctorado">Doctorado</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="campo-label" for="nuevo-nombre-posgrado">Nombre oficial del programa</label>
+            <input
+              id="nuevo-nombre-posgrado"
+              type="text"
+              placeholder="Ej. Maestría en Computación Aplicada"
+              [value]="nuevoPosgradoNombre()"
+              (input)="nuevoPosgradoNombre.set($any($event.target).value)"
+              class="campo"
+            />
+          </div>
+
+          @if (errorPosgrado()) {
+            <p class="rounded-lg bg-rose-50 px-3.5 py-2.5 text-xs text-rose-800 ring-1 ring-rose-200">{{ errorPosgrado() }}</p>
+          }
+
+          @if (mensajePosgrado()) {
+            <p class="rounded-lg bg-emerald-50 px-3.5 py-2.5 text-xs text-emerald-800 ring-1 ring-emerald-200">{{ mensajePosgrado() }}</p>
+          }
+
+          <button
+            type="button"
+            (click)="registrarPosgrado()"
+            [disabled]="guardandoPosgrado()"
+            class="boton-primario w-full"
+          >
+            @if (guardandoPosgrado()) {
+              Registrando…
+            } @else {
+              Agregar programa de posgrado
+            }
+          </button>
+        }
+      </div>
+
+      <!-- Lista de posgrados existentes -->
+      <div class="space-y-3 lg:col-span-7">
+        <div class="flex items-center justify-between">
+          <h3 class="text-xs font-bold uppercase tracking-wider text-slate-500">Programas registrados ({{ posgradosCatalogo().length }})</h3>
+          @if (cargandoPosgrados()) {
+            <span class="text-xs text-slate-400">Actualizando…</span>
+          }
+        </div>
+
+        @if (posgradosCatalogo().length === 0) {
+          <p class="py-8 text-center text-sm text-slate-400">No hay programas de posgrado registrados.</p>
+        } @else {
+          <div class="divide-y divide-slate-100 rounded-xl border border-slate-200 bg-slate-50/50 overflow-hidden">
+            @for (pos of posgradosCatalogo(); track pos.idPosgrado) {
+              <div class="flex flex-wrap items-center justify-between gap-3 p-3.5 transition-colors hover:bg-white">
+                <div class="space-y-1">
+                  <div class="flex items-center gap-2">
+                    <span
+                      class="chip text-[11px] font-semibold"
+                      [class.bg-violet-100]="pos.nivel === 'Maestría'"
+                      [class.text-violet-800]="pos.nivel === 'Maestría'"
+                      [class.bg-indigo-100]="pos.nivel === 'Doctorado'"
+                      [class.text-indigo-800]="pos.nivel === 'Doctorado'"
+                    >
+                      {{ pos.nivel }}
+                    </span>
+                    <span
+                      class="inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium"
+                      [class.bg-emerald-50]="pos.activo"
+                      [class.text-emerald-700]="pos.activo"
+                      [class.ring-1]="true"
+                      [class.ring-emerald-200]="pos.activo"
+                      [class.bg-rose-50]="!pos.activo"
+                      [class.text-rose-700]="!pos.activo"
+                      [class.ring-rose-200]="!pos.activo"
+                    >
+                      {{ pos.activo ? 'Activo' : 'Dado de baja' }}
+                    </span>
+                  </div>
+                  <p class="text-sm font-semibold text-slate-800">{{ pos.nombre }}</p>
+                </div>
+
+                <div class="flex items-center gap-1.5">
+                  <button
+                    type="button"
+                    (click)="iniciarEdicionPosgrado(pos)"
+                    class="rounded-lg border border-slate-200 bg-white px-2.5 py-1 text-xs font-medium text-slate-700 shadow-sm transition hover:bg-slate-50 hover:text-slate-900 cursor-pointer"
+                  >
+                    Editar
+                  </button>
+
+                  @if (pos.activo) {
+                    <button
+                      type="button"
+                      (click)="eliminarODarDeBajaPosgrado(pos)"
+                      [disabled]="procesandoBajaId() === pos.idPosgrado"
+                      class="rounded-lg border border-rose-200 bg-rose-50 px-2.5 py-1 text-xs font-semibold text-rose-700 transition hover:bg-rose-100 cursor-pointer disabled:opacity-50"
+                      title="Si tiene tesis publicadas se dará de baja. Si tiene tesis en curso no se permitirá."
+                    >
+                      @if (procesandoBajaId() === pos.idPosgrado) {
+                        Procesando…
+                      } @else {
+                        Dar de baja / Eliminar
+                      }
+                    </button>
+                  } @else {
+                    <button
+                      type="button"
+                      (click)="reactivarPosgrado(pos)"
+                      [disabled]="procesandoBajaId() === pos.idPosgrado"
+                      class="rounded-lg border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-xs font-semibold text-emerald-700 transition hover:bg-emerald-100 cursor-pointer disabled:opacity-50"
+                    >
+                      @if (procesandoBajaId() === pos.idPosgrado) {
+                        Reactivando…
+                      } @else {
+                        Reactivar
+                      }
+                    </button>
+                  }
+                </div>
+              </div>
+            }
+          </div>
+        }
+      </div>
+    </div>
+  </section>
+
+  <!-- SECCIÓN 2: DOCENTES (REGISTRO Y ASIGNACIÓN DE POSGRADOS) -->
+  <div class="grid gap-6 lg:grid-cols-2">
+    <!-- Registrar nuevo docente -->
+    <section class="tarjeta animar-entrada animar-entrada-2 overflow-hidden">
+      <div class="flex items-center gap-2.5 border-b border-slate-100 px-6 py-4">
+        <span class="flex h-8 w-8 items-center justify-center rounded-lg bg-violet-50 text-violet-600">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+          </svg>
+        </span>
+        <div>
+          <h2 class="text-sm font-semibold text-slate-900">Invitar y registrar docente por correo</h2>
+          <p class="text-xs text-slate-500">Envía una invitación al correo institucional del profesor para que active su cuenta.</p>
+        </div>
+      </div>
+      <div class="space-y-4 p-6">
+        <div>
+          <label class="campo-label" for="nombre-profesor">Nombre completo del docente</label>
+          <input
+            id="nombre-profesor"
+            type="text"
+            placeholder="Ej. Dra. Ana Beltrán"
+            [value]="nombre()"
+            (input)="nombre.set($any($event.target).value)"
+            class="campo"
+          />
+        </div>
+
+        <div>
+          <label class="campo-label" for="correo-profesor">Correo institucional del docente</label>
+          <input
+            id="correo-profesor"
+            type="email"
+            placeholder="docente@upt.edu.mx"
+            [value]="correo()"
+            (input)="correo.set($any($event.target).value)"
+            class="campo"
+          />
+          <p class="mt-1 text-xs text-slate-500">
+            Se enviará un enlace de invitación a este correo institucional terminado en @upt.edu.mx.
+          </p>
+        </div>
+
+        <div class="space-y-2">
+          <div class="flex items-center justify-between">
+            <label class="campo-label mb-0">Posgrados donde imparte clase</label>
+            <span class="text-xs text-slate-400">Catálogo activo</span>
+          </div>
+          @for (posgrado of posgrados(); track $index) {
+            <div class="flex items-center gap-2">
+              <select
+                [value]="posgrado.nivel"
+                (change)="cambiarNivel($index, $any($event.target).value)"
+                class="campo w-32 shrink-0"
+              >
+                <option value="Maestría">Maestría</option>
+                <option value="Doctorado">Doctorado</option>
+              </select>
+
+              @if (posgradosActivos().length > 0) {
+                <select
+                  [value]="posgrado.programa"
+                  (change)="cambiarPrograma($index, $any($event.target).value)"
+                  class="campo flex-1"
+                >
+                  <option value="">-- Seleccionar posgrado --</option>
+                  @for (cat of posgradosActivos(); track cat.idPosgrado) {
+                    @if (cat.nivel === posgrado.nivel) {
+                      <option [value]="cat.nombre">{{ cat.nombre }}</option>
+                    }
+                  }
+                </select>
+              } @else {
+                <input
+                  type="text"
+                  placeholder="Programa de posgrado"
+                  [value]="posgrado.programa"
+                  (input)="cambiarPrograma($index, $any($event.target).value)"
+                  class="campo flex-1"
+                />
+              }
+
+              <button
+                type="button"
+                (click)="quitarPosgrado($index)"
+                class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-slate-200 text-sm text-slate-500 transition hover:border-rose-300 hover:bg-rose-50 hover:text-rose-600 cursor-pointer"
+                aria-label="Quitar programa"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+          }
+          <button
+            type="button"
+            (click)="agregarPosgrado()"
+            class="enlace inline-flex items-center gap-1 text-xs cursor-pointer"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+            </svg>
+            Agregar otro posgrado
+          </button>
+        </div>
+
+        @if (errorProfesor()) {
+          <p class="rounded-lg bg-rose-50 px-4 py-3 text-sm text-rose-800 ring-1 ring-rose-200">{{ errorProfesor() }}</p>
+        }
+
+        @if (mensaje()) {
+          <p class="rounded-lg bg-emerald-50 px-4 py-3 text-sm text-emerald-800 ring-1 ring-emerald-200">{{ mensaje() }}</p>
+        }
+
+        <button
+          type="button"
+          (click)="registrar()"
+          [disabled]="guardando()"
+          class="boton-primario w-full"
+        >
+          @if (guardando()) {
+            <svg class="h-4 w-4 animate-spin inline-block mr-1.5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
+            </svg>
+            Enviando invitación…
+          } @else {
+            Enviar invitación y registrar docente
+          }
+        </button>
+      </div>
+    </section>
+
+    <!-- Lista de Profesores activos y Modificación de sus posgrados -->
+    <section class="tarjeta animar-entrada animar-entrada-3 overflow-hidden">
+      <div class="flex items-center gap-2.5 border-b border-slate-100 px-6 py-4">
+        <span class="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-50 text-emerald-600">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+        </span>
+        <div>
+          <h2 class="text-sm font-semibold text-slate-900">Profesores activos y sus posgrados</h2>
+          <p class="text-xs text-slate-500">El administrador puede agregar o modificar los posgrados asignados a cada profesor.</p>
+        </div>
+      </div>
+
+      @if (mensajeLista()) {
+        <div class="mx-6 mt-4 rounded-lg bg-sky-50 px-3.5 py-2.5 text-xs font-medium text-sky-900 ring-1 ring-sky-200">
+          {{ mensajeLista() }}
+        </div>
+      }
+
+      @if (cargando()) {
+        <div class="flex items-center gap-2 p-6 text-sm text-slate-500">
+          <svg class="h-4 w-4 animate-spin text-violet-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
+          </svg>
+          Cargando…
+        </div>
+      } @else if (error()) {
+        <div class="aviso-error !mt-0 m-4">{{ error() }}</div>
+      } @else if (profesores().length === 0) {
+        <p class="p-6 text-sm text-slate-500">Aún no hay profesores registrados.</p>
+      } @else {
+        <ul class="divide-y divide-slate-100 max-h-[750px] overflow-y-auto">
+          @for (profesor of profesores(); track profesor.idProfesor) {
+            <li class="px-6 py-4 transition-colors hover:bg-slate-50/50">
+              <div class="flex flex-wrap items-center justify-between gap-2">
+                <div>
+                  <p class="text-sm font-semibold text-slate-900">{{ profesor.nombre }}</p>
+                  @if (profesor.correo) {
+                    <p class="text-xs text-slate-500">{{ profesor.correo }}</p>
+                  }
+                </div>
+                <div class="flex items-center gap-2">
+                  @if (profesor.cuentaActiva) {
+                    <span class="chip bg-emerald-50 text-emerald-700 border border-emerald-200 text-[11px] font-semibold">
+                      Cuenta activa
+                    </span>
+                  } @else if (profesor.correo) {
+                    <span class="chip bg-amber-50 text-amber-800 border border-amber-200 text-[11px] font-semibold">
+                      Invitación pendiente
+                    </span>
+                  }
+
+                  <!-- Botón para modificar posgrados del profesor -->
+                  @if (esAdministrador()) {
+                    <button
+                      type="button"
+                      (click)="abrirGestionPosgrados(profesor)"
+                      class="rounded-lg border border-indigo-200 bg-indigo-50 px-2.5 py-1 text-xs font-semibold text-indigo-700 transition hover:bg-indigo-100 cursor-pointer"
+                    >
+                      Modificar posgrados
+                    </button>
+                  }
+
+                  <button
+                    type="button"
+                    (click)="reenviarInvitacion(profesor)"
+                    [disabled]="reenviandoId() === profesor.idProfesor"
+                    class="rounded-lg border border-violet-200 bg-violet-50 px-2.5 py-1 text-xs font-semibold text-violet-700 transition hover:bg-violet-100 cursor-pointer"
+                  >
+                    @if (reenviandoId() === profesor.idProfesor) {
+                      Enviando…
+                    } @else if (profesor.correo) {
+                      Reenviar invitación
+                    } @else {
+                      Invitar por correo
+                    }
+                  </button>
+                </div>
+              </div>
+
+              @if (profesorAsignandoCorreo() === profesor.idProfesor) {
+                <div class="mt-2.5 flex items-center gap-2 rounded-xl bg-slate-50 p-2.5 border border-slate-200">
+                  <input
+                    type="email"
+                    placeholder="docente@upt.edu.mx"
+                    [value]="correoAsignar()"
+                    (input)="correoAsignar.set($any($event.target).value)"
+                    class="campo !py-1.5 text-xs"
+                  />
+                  <button
+                    type="button"
+                    (click)="enviarInvitacionConCorreoNuevo(profesor)"
+                    class="boton-primario !py-1.5 !px-3 !text-xs shrink-0"
+                  >
+                    Enviar correo
+                  </button>
+                </div>
+              }
+
+              <!-- Visualización de posgrados actuales del profesor -->
+              <div class="mt-2 flex flex-wrap gap-1.5">
+                @if (profesor.programas.length === 0) {
+                  <span class="text-xs text-amber-700 italic">Sin posgrados asignados actualmente.</span>
+                } @else {
+                  @for (programa of profesor.programas; track programa.nivel + programa.programa) {
+                    <span class="chip bg-slate-100 text-slate-700 border border-slate-200 text-xs">
+                      <span class="font-bold text-slate-900">{{ programa.nivel }}:</span> {{ programa.programa }}
+                    </span>
+                  }
+                }
+              </div>
+
+              <!-- PANEL EN LÍNEA PARA AGREGAR O MODIFICAR POSGRADOS DEL PROFESOR -->
+              @if (profesorGestionandoPosgrados() === profesor.idProfesor) {
+                <div class="mt-3.5 rounded-xl border border-indigo-200 bg-indigo-50/40 p-4 space-y-3">
+                  <div class="flex items-center justify-between border-b border-indigo-100 pb-2">
+                    <h4 class="text-xs font-bold text-indigo-950 uppercase tracking-wider">
+                      Gestionar posgrados de {{ profesor.nombre }}
+                    </h4>
+                    <button
+                      type="button"
+                      (click)="cerrarGestionPosgrados()"
+                      class="text-xs text-slate-500 hover:text-slate-800 underline cursor-pointer"
+                    >
+                      Cerrar
+                    </button>
+                  </div>
+
+                  <div class="space-y-2">
+                    @for (pos of posgradosProfesorEditando(); track $index) {
+                      <div class="flex items-center gap-2">
+                        <select
+                          [value]="pos.nivel"
+                          (change)="cambiarNivelProfesorEditando($index, $any($event.target).value)"
+                          class="campo w-32 shrink-0 bg-white"
+                        >
+                          <option value="Maestría">Maestría</option>
+                          <option value="Doctorado">Doctorado</option>
+                        </select>
+
+                        @if (posgradosActivos().length > 0) {
+                          <select
+                            [value]="pos.programa"
+                            (change)="cambiarProgramaProfesorEditando($index, $any($event.target).value)"
+                            class="campo flex-1 bg-white"
+                          >
+                            <option value="">-- Seleccionar posgrado activo --</option>
+                            @for (cat of posgradosActivos(); track cat.idPosgrado) {
+                              @if (cat.nivel === pos.nivel) {
+                                <option [value]="cat.nombre">{{ cat.nombre }}</option>
+                              }
+                            }
+                          </select>
+                        } @else {
+                          <input
+                            type="text"
+                            placeholder="Nombre del programa"
+                            [value]="pos.programa"
+                            (input)="cambiarProgramaProfesorEditando($index, $any($event.target).value)"
+                            class="campo flex-1 bg-white"
+                          />
+                        }
+
+                        <button
+                          type="button"
+                          (click)="quitarPosgradoDeProfesor($index)"
+                          class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-500 hover:bg-rose-50 hover:text-rose-600 transition cursor-pointer"
+                          aria-label="Quitar posgrado"
+                        >
+                          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                          </svg>
+                        </button>
+                      </div>
+                    }
+
+                    <button
+                      type="button"
+                      (click)="agregarPosgradoAProfesor()"
+                      class="enlace inline-flex items-center gap-1 text-xs cursor-pointer text-indigo-700"
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                      </svg>
+                      Asignar otro posgrado
+                    </button>
+                  </div>
+
+                  @if (errorGestionProfesor()) {
+                    <p class="rounded-lg bg-rose-50 px-3 py-2 text-xs text-rose-800 ring-1 ring-rose-200">{{ errorGestionProfesor() }}</p>
+                  }
+
+                  @if (mensajeGestionProfesor()) {
+                    <p class="rounded-lg bg-emerald-50 px-3 py-2 text-xs text-emerald-800 ring-1 ring-emerald-200">{{ mensajeGestionProfesor() }}</p>
+                  }
+
+                  <div class="flex items-center gap-2 pt-1">
+                    <button
+                      type="button"
+                      (click)="guardarPosgradosProfesor(profesor.idProfesor)"
+                      [disabled]="guardandoPosgradosProfesor()"
+                      class="boton-primario !py-2 !text-xs"
+                    >
+                      @if (guardandoPosgradosProfesor()) {
+                        Guardando…
+                      } @else {
+                        Guardar posgrados del docente
+                      }
+                    </button>
+                    <button
+                      type="button"
+                      (click)="cerrarGestionPosgrados()"
+                      class="boton-secundario !py-2 !text-xs bg-white"
+                    >
+                      Cancelar
+                    </button>
+                  </div>
+                </div>
+              }
+            </li>
+          }
+        </ul>
+      }
+    </section>
+  </div>
+
+  <!-- SECCIÓN 3: DIRECTORES DE POSGRADO (CREACIÓN Y GESTIÓN) -->
+  <section class="tarjeta animar-entrada animar-entrada-3 overflow-hidden">
+    <div class="flex items-center justify-between border-b border-slate-100 px-6 py-4">
+      <div class="flex items-center gap-2.5">
+        <span class="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-50 text-emerald-600">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+          </svg>
+        </span>
+        <div>
+          <h2 class="text-sm font-semibold text-slate-900">Directores de Posgrado</h2>
+          <p class="text-xs text-slate-500">
+            Cree y gestione los usuarios con rol de Director de Posgrado para acceso al panel de indicadores y dictámenes institucionales.
+          </p>
+        </div>
+      </div>
+      <span class="rounded-full bg-emerald-50 px-2.5 py-0.5 text-xs font-semibold text-emerald-700">
+        {{ directores().length }} {{ directores().length === 1 ? 'director' : 'directores' }}
+      </span>
+    </div>
+
+    <div class="grid gap-6 p-6 lg:grid-cols-12">
+      <!-- Formulario para crear Director -->
+      <div class="space-y-4 lg:col-span-5 border-b pb-6 lg:border-b-0 lg:border-r lg:pr-6 border-slate-100">
+        <h3 class="text-xs font-bold uppercase tracking-wider text-slate-500">Registrar nuevo Director</h3>
+
+        <div>
+          <label class="campo-label" for="nombre-director">Nombre completo</label>
+          <input
+            id="nombre-director"
+            type="text"
+            placeholder="Ej. Dr. Roberto Mendoza Pérez"
+            [value]="directorNombre()"
+            (input)="directorNombre.set($any($event.target).value)"
+            class="campo"
+          />
+        </div>
+
+        <div>
+          <label class="campo-label" for="correo-director">Correo institucional (@upt.edu.mx)</label>
+          <input
+            id="correo-director"
+            type="email"
+            placeholder="director.posgrado@upt.edu.mx"
+            [value]="directorCorreo()"
+            (input)="directorCorreo.set($any($event.target).value)"
+            class="campo"
+          />
+        </div>
+
+        <div>
+          <label class="campo-label" for="pass-director">Contraseña inicial</label>
+          <input
+            id="pass-director"
+            type="text"
+            placeholder="Admin.123"
+            [value]="directorContrasena()"
+            (input)="directorContrasena.set($any($event.target).value)"
+            class="campo"
+          />
+          <p class="mt-1 text-[11px] text-slate-400">Predeterminada: Admin.123 (Mínimo 8 caracteres, mayúscula y número).</p>
+        </div>
+
+        @if (errorDirector()) {
+          <p class="rounded-lg bg-rose-50 px-3 py-2 text-xs text-rose-800 ring-1 ring-rose-200">{{ errorDirector() }}</p>
+        }
+        @if (mensajeDirector()) {
+          <p class="rounded-lg bg-emerald-50 px-3 py-2 text-xs text-emerald-800 ring-1 ring-emerald-200">{{ mensajeDirector() }}</p>
+        }
+
+        <button
+          type="button"
+          (click)="registrarDirector()"
+          [disabled]="guardandoDirector()"
+          class="boton-primario w-full !py-2.5 !text-xs font-semibold cursor-pointer"
+        >
+          @if (guardandoDirector()) {
+            Registrando director…
+          } @else {
+            Crear Director de Posgrado
+          }
+        </button>
+      </div>
+
+      <!-- Listado de Directores -->
+      <div class="space-y-3 lg:col-span-7">
+        <h3 class="text-xs font-bold uppercase tracking-wider text-slate-500">Directores de Posgrado Registrados</h3>
+
+        @if (cargandoDirectores()) {
+          <div class="py-8 text-center text-xs text-slate-400">Cargando directores…</div>
+        } @else if (directores().length === 0) {
+          <div class="rounded-xl border border-dashed border-slate-200 p-8 text-center">
+            <p class="text-xs text-slate-500">No hay usuarios con rol de Director de Posgrado registrados actualmente.</p>
+          </div>
+        } @else {
+          <div class="overflow-hidden rounded-xl border border-slate-200">
+            <div class="divide-y divide-slate-100 max-h-80 overflow-y-auto">
+              @for (dir of directores(); track dir.idUsuario) {
+                <div class="flex items-center justify-between p-3.5 hover:bg-slate-50/70 transition-colors">
+                  <div class="flex items-center gap-3">
+                    <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-emerald-100 text-xs font-bold text-emerald-800">
+                      {{ dir.nombre ? dir.nombre.substring(0, 2).toUpperCase() : 'DP' }}
+                    </span>
+                    <div>
+                      <p class="text-xs font-semibold text-slate-900">{{ dir.nombre }}</p>
+                      <p class="text-[11px] text-slate-500">{{ dir.correo }}</p>
+                    </div>
+                  </div>
+                  <div class="flex items-center gap-2">
+                    <span class="rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-medium text-emerald-700">
+                      Director Activo
+                    </span>
+                    <button
+                      type="button"
+                      (click)="removerDirector(dir.idUsuario, dir.correo)"
+                      [disabled]="removiendoDirectorId() === dir.idUsuario"
+                      class="rounded-lg p-1 text-slate-400 hover:bg-rose-50 hover:text-rose-600 transition-colors cursor-pointer"
+                      title="Revocar rol de Director"
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                      </svg>
+                    </button>
+                  </div>
+                </div>
+              }
+            </div>
+          </div>
+        }
+      </div>
+    </div>
+  </section>
+
+  <!-- SECCIÓN 4: TIPOS DE ARTÍCULO -->
+  <section class="tarjeta animar-entrada animar-entrada-4 overflow-hidden">
+    <div class="flex items-center gap-2.5 border-b border-slate-100 px-6 py-4">
+      <span class="flex h-8 w-8 items-center justify-center rounded-lg bg-violet-50 text-violet-600">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25" />
+        </svg>
+      </span>
+      <h2 class="text-sm font-semibold text-slate-900">Tipos de artículo</h2>
+    </div>
+    <div class="grid gap-6 p-6 lg:grid-cols-2">
+      @if (esAdministrador()) {
+        <div class="space-y-4">
+          <div>
+            <label class="campo-label" for="nombre-tipo">Nombre</label>
+            <input
+              id="nombre-tipo"
+              type="text"
+              placeholder="P. ej. Artículo de revista"
+              [value]="tipoNombre()"
+              (input)="tipoNombre.set($any($event.target).value)"
+              class="campo"
+            />
+          </div>
+          <div>
+            <label class="campo-label" for="descripcion-tipo">Descripción</label>
+            <input
+              id="descripcion-tipo"
+              type="text"
+              placeholder="Descripción opcional"
+              [value]="tipoDescripcion()"
+              (input)="tipoDescripcion.set($any($event.target).value)"
+              class="campo"
+            />
+          </div>
+          @if (mensajeTipo()) {
+            <p class="rounded-lg bg-sky-50 px-4 py-3 text-sm text-sky-800 ring-1 ring-sky-100">{{ mensajeTipo() }}</p>
+          }
+          <button
+            type="button"
+            (click)="registrarTipoArticulo()"
+            [disabled]="guardandoTipo()"
+            class="boton-primario"
+          >
+            @if (guardandoTipo()) {
+              <svg class="h-4 w-4 animate-spin inline-block mr-1.5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
+              </svg>
+              Registrando…
+            } @else {
+              Registrar tipo de artículo
+            }
+          </button>
+        </div>
+      }
+
+      <div>
+        @if (tiposArticulo().length === 0) {
+          <p class="text-sm text-slate-500">Aún no hay tipos de artículo registrados.</p>
+        } @else {
+          <ul class="divide-y divide-slate-100">
+            @for (tipo of tiposArticulo(); track tipo.idTipoArticulo) {
+              <li class="flex items-center gap-3 py-2.5">
+                <span class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-violet-50 text-violet-500">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                  </svg>
+                </span>
+                <div>
+                  <p class="text-sm font-medium text-slate-900">{{ tipo.nombre }}</p>
+                  @if (tipo.descripcion) {
+                    <p class="text-xs text-slate-500">{{ tipo.descripcion }}</p>
+                  }
+                </div>
+              </li>
+            }
+          </ul>
+        }
+      </div>
+    </div>
+  </section>
+</div>

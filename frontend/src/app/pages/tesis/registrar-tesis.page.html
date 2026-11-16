@@ -1,0 +1,170 @@
+<div class="mx-auto max-w-3xl space-y-6">
+  <header class="animar-entrada">
+    <h1 class="text-2xl font-bold text-slate-900">Registrar tesis</h1>
+    <p class="mt-1 text-sm text-slate-500">Completa los datos para iniciar el proceso de titulación.</p>
+  </header>
+
+  @if (cargando()) {
+    <div class="tarjeta animar-entrada animar-entrada-1 p-12 text-center">
+      <div class="mx-auto flex h-10 w-10 items-center justify-center rounded-full bg-violet-50 text-violet-600">
+        <svg class="h-5 w-5 animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
+        </svg>
+      </div>
+      <p class="mt-3 text-sm text-slate-500">Cargando catálogos…</p>
+    </div>
+  } @else if (tesisEnProceso(); as activa) {
+    <div class="tarjeta animar-entrada animar-entrada-1 space-y-5 p-8 text-center">
+      <div class="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-amber-50 text-amber-600 ring-8 ring-amber-50/50">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
+        </svg>
+      </div>
+      <div class="space-y-2">
+        <h2 class="text-xl font-bold text-slate-900">Ya cuentas con un proyecto de tesis en proceso</h2>
+        <p class="mx-auto max-w-lg text-sm text-slate-600">
+          Actualmente tienes registrada la propuesta <span class="font-bold text-violet-700">“{{ activa.titulo }}”</span> con estado
+          <span class="chip bg-amber-50 font-bold text-amber-700 text-xs">{{ activa.estado }}</span>.
+        </p>
+        <p class="mx-auto max-w-lg text-xs text-slate-500">
+          Solo puedes tener <strong>1 tesis en proceso</strong> a la vez. Podrás registrar una nueva propuesta únicamente cuando la actual sea aceptada por el director y publicada en el repositorio, o si es cancelada/rechazada.
+        </p>
+      </div>
+      <div class="flex flex-wrap items-center justify-center gap-3 pt-3">
+        <a [routerLink]="['/tesis', activa.folio]" class="boton-primario">
+          Ver mi tesis en proceso
+        </a>
+        <a routerLink="/mis-tesis" class="boton-secundario">
+          Volver a mis tesis
+        </a>
+      </div>
+    </div>
+  } @else {
+    <form class="tarjeta animar-entrada animar-entrada-1 space-y-5 p-6 sm:p-8">
+      <div>
+        <label class="campo-label" for="titulo">Título de la tesis</label>
+        <input
+          id="titulo"
+          type="text"
+          [value]="titulo()"
+          (input)="titulo.set($any($event.target).value)"
+          placeholder="Ej. Sistema de visión por computadora para detección de plagas"
+          class="campo"
+        />
+      </div>
+
+      <div class="grid gap-5 sm:grid-cols-2">
+        <div>
+          <label class="campo-label" for="nivel">Nivel de posgrado</label>
+          <select
+            id="nivel"
+            class="campo"
+            (change)="cambiarNivel($any($event.target).value)"
+          >
+            <option value="Maestría" [selected]="nivel() === 'Maestría'">Maestría</option>
+            <option value="Doctorado" [selected]="nivel() === 'Doctorado'">Doctorado</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="campo-label" for="programa">Programa</label>
+          <select
+            id="programa"
+            class="campo"
+            [value]="programa()"
+            (change)="cambiarPrograma($any($event.target).value)"
+          >
+            @for (opcion of programas(); track opcion) {
+              <option [value]="opcion" [selected]="programa() === opcion">{{ opcion }}</option>
+            }
+          </select>
+        </div>
+      </div>
+
+      <div>
+        <label class="campo-label" for="asesor">Asesor(a) de tesis</label>
+        <select
+          id="asesor"
+          class="campo"
+          [disabled]="asesoresDisponibles().length === 0"
+          [value]="idAsesor() ?? ''"
+          (change)="asignarAsesor($event)"
+        >
+          <option value="">— Selecciona un asesor —</option>
+          @for (profesor of asesoresDisponibles(); track profesor.idProfesor) {
+            <option [value]="profesor.idProfesor">{{ profesor.nombre }}</option>
+          }
+        </select>
+        @if (asesoresDisponibles().length === 0) {
+          <p class="mt-2 flex items-center gap-1.5 text-xs text-amber-600">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
+            </svg>
+            No hay profesores activos registrados para este programa. Contacta al administrador.
+          </p>
+        }
+      </div>
+
+      <label class="flex w-fit cursor-pointer items-center gap-2.5">
+        <input
+          id="con-coasesor"
+          type="checkbox"
+          [checked]="conCoAsesor()"
+          (change)="alternarCoAsesor()"
+          class="h-4 w-4 rounded border-slate-300 text-violet-600 focus:ring-violet-500"
+        />
+        <span class="text-sm font-medium text-slate-700">Cuenta con co-asesor(a)</span>
+      </label>
+
+      @if (conCoAsesor()) {
+        <div class="animar-aparecer">
+          <label class="campo-label" for="coasesor">Co-asesor(a) de tesis</label>
+          <select
+            id="coasesor"
+            class="campo"
+            [value]="idCoAsesor() ?? ''"
+            (change)="asignarCoAsesor($event)"
+          >
+            <option value="">— Selecciona un co-asesor —</option>
+            @for (profesor of asesoresDisponibles(); track profesor.idProfesor) {
+              @if (profesor.idProfesor !== idAsesor()) {
+                <option [value]="profesor.idProfesor">{{ profesor.nombre }}</option>
+              }
+            }
+          </select>
+        </div>
+      }
+
+      @if (error()) {
+        <div class="aviso-error">{{ error() }}</div>
+      }
+
+      <div class="flex flex-wrap items-center justify-end gap-3 border-t border-slate-100 pt-5">
+        <button
+          type="button"
+          (click)="cancelar()"
+          class="boton-secundario"
+        >
+          Cancelar
+        </button>
+        <button
+          type="button"
+          [disabled]="!formularioValido() || enviando()"
+          (click)="registrar()"
+          class="boton-primario"
+        >
+          @if (enviando()) {
+            <svg class="h-4 w-4 animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
+            </svg>
+            Registrando…
+          } @else {
+            Registrar tesis
+          }
+        </button>
+      </div>
+    </form>
+  }
+</div>

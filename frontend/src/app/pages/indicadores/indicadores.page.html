@@ -1,0 +1,500 @@
+<div class="mx-auto max-w-6xl space-y-6">
+  <header class="animar-entrada flex flex-wrap items-center justify-between gap-4">
+    <div>
+      <h1 class="text-2xl font-bold text-slate-900">Indicadores de Posgrado</h1>
+      <p class="mt-1 text-sm text-slate-500">
+        Métricas generales y distribución de tesis por programa y nivel académico.
+      </p>
+    </div>
+
+    <!-- Pestañas de Navegación / Desglose de Niveles -->
+    <div class="inline-flex rounded-xl bg-slate-100 p-1 border border-slate-200">
+      <button
+        type="button"
+        (click)="seleccionarVista('General')"
+        class="rounded-lg px-3.5 py-1.5 text-xs font-semibold transition cursor-pointer"
+        [class.bg-white]="vistaNivel() === 'General'"
+        [class.text-violet-700]="vistaNivel() === 'General'"
+        [class.shadow-sm]="vistaNivel() === 'General'"
+        [class.text-slate-600]="vistaNivel() !== 'General'"
+        [class.hover:text-slate-900]="vistaNivel() !== 'General'"
+      >
+        Visión General
+      </button>
+      <button
+        type="button"
+        (click)="seleccionarVista('Maestría')"
+        class="rounded-lg px-3.5 py-1.5 text-xs font-semibold transition cursor-pointer"
+        [class.bg-white]="vistaNivel() === 'Maestría'"
+        [class.text-violet-700]="vistaNivel() === 'Maestría'"
+        [class.shadow-sm]="vistaNivel() === 'Maestría'"
+        [class.text-slate-600]="vistaNivel() !== 'Maestría'"
+        [class.hover:text-slate-900]="vistaNivel() !== 'Maestría'"
+      >
+        🎓 Maestrías
+      </button>
+      <button
+        type="button"
+        (click)="seleccionarVista('Doctorado')"
+        class="rounded-lg px-3.5 py-1.5 text-xs font-semibold transition cursor-pointer"
+        [class.bg-white]="vistaNivel() === 'Doctorado'"
+        [class.text-violet-700]="vistaNivel() === 'Doctorado'"
+        [class.shadow-sm]="vistaNivel() === 'Doctorado'"
+        [class.text-slate-600]="vistaNivel() !== 'Doctorado'"
+        [class.hover:text-slate-900]="vistaNivel() !== 'Doctorado'"
+      >
+        🔬 Doctorados
+      </button>
+    </div>
+  </header>
+
+  @if (cargando()) {
+    <div class="tarjeta animar-entrada animar-entrada-1 p-12 text-center">
+      <div class="mx-auto flex h-10 w-10 items-center justify-center rounded-full bg-violet-50 text-violet-600">
+        <svg class="h-5 w-5 animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
+        </svg>
+      </div>
+      <p class="mt-3 text-sm text-slate-500">Cargando indicadores…</p>
+    </div>
+  } @else {
+    @if (indicadores(); as datos) {
+      <!-- RESUMEN DE TARJETAS SUPERIORES -->
+      <section class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <div class="tarjeta animar-entrada animar-entrada-1 p-5">
+          <div class="flex items-center justify-between">
+            <p class="text-xs font-medium uppercase tracking-wide text-slate-500">
+              {{ vistaNivel() === 'General' ? 'Total de Tesis' : 'Total ' + vistaNivel() + 's' }}
+            </p>
+            <span class="flex h-9 w-9 items-center justify-center rounded-xl bg-violet-50 text-violet-600">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 14l9-5-9-5-9 5 9 5z" />
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z" />
+              </svg>
+            </span>
+          </div>
+          <p class="mt-2 text-3xl font-bold text-violet-700">{{ totalVistaActual() }}</p>
+        </div>
+
+        <div class="animate-[entrada-arriba_0.5s_ease-out_0.08s_both] rounded-2xl border border-emerald-200 bg-emerald-50 p-5">
+          <div class="flex items-center justify-between">
+            <p class="text-xs font-medium uppercase tracking-wide text-emerald-600">Aceptadas (Publicadas)</p>
+            <span class="flex h-9 w-9 items-center justify-center rounded-xl bg-white text-emerald-600 shadow-sm">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </span>
+          </div>
+          <p class="mt-2 text-3xl font-bold text-emerald-700">
+            @if (vistaNivel() === 'General') {
+              {{ datos.aceptadas }}
+            } @else {
+              {{ datos.porNivel.find(n => n.nivel === vistaNivel())?.aceptadas ?? 0 }}
+            }
+          </p>
+        </div>
+
+        <div class="animate-[entrada-arriba_0.5s_ease-out_0.16s_both] rounded-2xl border border-amber-200 bg-amber-50 p-5">
+          <div class="flex items-center justify-between">
+            <p class="text-xs font-medium uppercase tracking-wide text-amber-600">En trámite</p>
+            <span class="flex h-9 w-9 items-center justify-center rounded-xl bg-white text-amber-500 shadow-sm">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </span>
+          </div>
+          <p class="mt-2 text-3xl font-bold text-amber-700">
+            @if (vistaNivel() === 'General') {
+              {{ datos.enTramite }}
+            } @else {
+              {{ datos.porNivel.find(n => n.nivel === vistaNivel())?.enTramite ?? 0 }}
+            }
+          </p>
+        </div>
+
+        <div class="animate-[entrada-arriba_0.5s_ease-out_0.24s_both] rounded-2xl border border-rose-200 bg-rose-50 p-5">
+          <div class="flex items-center justify-between">
+            <p class="text-xs font-medium uppercase tracking-wide text-rose-600">Rechazadas</p>
+            <span class="flex h-9 w-9 items-center justify-center rounded-xl bg-white text-rose-500 shadow-sm">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </span>
+          </div>
+          <p class="mt-2 text-3xl font-bold text-rose-700">
+            @if (vistaNivel() === 'General') {
+              {{ datos.rechazadas }}
+            } @else {
+              {{ datos.porNivel.find(n => n.nivel === vistaNivel())?.rechazadas ?? 0 }}
+            }
+          </p>
+        </div>
+      </section>
+
+      <!-- GRÁFICA DE PASTEL PRINCIPAL (CON DESGLOSE INTERACTIVO) -->
+      <section class="tarjeta animar-entrada animar-entrada-2 overflow-hidden">
+        <div class="flex flex-wrap items-center justify-between border-b border-slate-100 px-6 py-4 gap-2">
+          <div class="flex items-center gap-2.5">
+            <span class="flex h-8 w-8 items-center justify-center rounded-lg bg-indigo-50 text-indigo-600">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z" />
+                <path stroke-linecap="round" stroke-linejoin="round" d="M20.488 9H15V3.512A9.025 9.025 0 0120.488 9z" />
+              </svg>
+            </span>
+            <div>
+              <h2 class="text-sm font-semibold text-slate-900">
+                @if (vistaNivel() === 'General') {
+                  Distribución de Tesis por Nivel de Posgrado
+                } @else {
+                  Distribución de Tesis por Programas de {{ vistaNivel() }}
+                }
+              </h2>
+              <p class="text-xs text-slate-500">
+                @if (vistaNivel() === 'General') {
+                  Haga clic en un segmento o en "Más detalles" para explorar los programas específicos de cada posgrado.
+                } @else {
+                  Mostrando los programas individuales que componen el nivel {{ vistaNivel() }}.
+                }
+              </p>
+            </div>
+          </div>
+
+          @if (vistaNivel() !== 'General') {
+            <button
+              type="button"
+              (click)="volverGeneral()"
+              class="boton-secundario !py-1.5 !px-3 !text-xs cursor-pointer flex items-center gap-1.5"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+              </svg>
+              Volver a vista general
+            </button>
+          }
+        </div>
+
+        <div class="p-6">
+          @if (rebanadasPastel().length === 0) {
+            <div class="py-12 text-center text-sm text-slate-400">
+              No hay tesis registradas para este criterio.
+            </div>
+          } @else {
+            <div class="grid gap-8 lg:grid-cols-12 items-center">
+              <!-- Círculo / Donut SVG del Pastel -->
+              <div class="lg:col-span-5 flex flex-col items-center justify-center">
+                <div class="relative w-64 h-64 sm:w-72 sm:h-72">
+                  <svg viewBox="0 0 200 200" class="w-full h-full transform transition-all duration-300">
+                    @for (rebanada of rebanadasPastel(); track rebanada.id) {
+                      <path
+                        [attr.d]="rebanada.pathD"
+                        [attr.fill]="rebanada.color"
+                        (click)="clicRebanada(rebanada)"
+                        class="cursor-pointer transition-all duration-200 hover:opacity-85 hover:scale-[1.02] origin-center"
+                        [class.stroke-white]="true"
+                        [class.stroke-2]="true"
+                        [attr.title]="rebanada.etiqueta + ': ' + rebanada.valor + ' tesis (' + rebanada.porcentaje + '%)'"
+                      />
+                    }
+                  </svg>
+
+                  <!-- Centro del pastel (Donut Hole) -->
+                  <div class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none text-center">
+                    <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">
+                      {{ vistaNivel() === 'General' ? 'Total General' : vistaNivel() }}
+                    </span>
+                    <span class="text-3xl font-extrabold text-slate-800">
+                      {{ totalVistaActual() }}
+                    </span>
+                    <span class="text-[11px] text-slate-500 font-medium">tesis registradas</span>
+                  </div>
+                </div>
+
+                @if (rebanadaActiva(); as activa) {
+                  <div class="mt-3 rounded-lg bg-slate-50 px-3.5 py-1.5 border border-slate-200 text-xs text-center text-slate-700 animate-fadeIn">
+                    Seleccionado: <strong [style.color]="activa.color">{{ activa.etiqueta }}</strong> — {{ activa.valor }} tesis ({{ activa.porcentaje }}%)
+                  </div>
+                }
+              </div>
+
+              <!-- Leyenda Detallada y Botones de Sección -->
+              <div class="lg:col-span-7 space-y-3">
+                <div class="flex items-center justify-between pb-1">
+                  <h3 class="text-xs font-bold uppercase tracking-wider text-slate-500">
+                    {{ vistaNivel() === 'General' ? 'Niveles de Posgrado' : 'Programas de ' + vistaNivel() }}
+                  </h3>
+                  <span class="text-xs text-slate-400">Porcentaje sobre el total</span>
+                </div>
+
+                <div class="space-y-2.5">
+                  @for (rebanada of rebanadasPastel(); track rebanada.id) {
+                    <div
+                      class="rounded-xl border border-slate-200/80 bg-white p-3.5 shadow-sm transition hover:border-slate-300 hover:shadow"
+                      [class.ring-2]="rebanadaActiva()?.id === rebanada.id"
+                      [class.ring-violet-400]="rebanadaActiva()?.id === rebanada.id"
+                    >
+                      <div class="flex flex-wrap items-center justify-between gap-2">
+                        <div class="flex items-center gap-3">
+                          <span
+                            class="h-3.5 w-3.5 shrink-0 rounded-full"
+                            [style.backgroundColor]="rebanada.color"
+                          ></span>
+                          <div>
+                            <p class="text-sm font-semibold text-slate-800">{{ rebanada.etiqueta }}</p>
+                            @if (rebanada.subetiqueta) {
+                              <p class="text-xs text-slate-500">{{ rebanada.subetiqueta }}</p>
+                            }
+                          </div>
+                        </div>
+
+                        <div class="flex items-center gap-3">
+                          <div class="text-right">
+                            <span class="text-sm font-bold text-slate-900">{{ rebanada.valor }}</span>
+                            <span class="text-xs text-slate-500 ml-1">({{ rebanada.porcentaje }}%)</span>
+                          </div>
+
+                          <!-- Botón "Más detalles" en Vista General -->
+                          @if (vistaNivel() === 'General' && rebanada.nivel) {
+                            <button
+                              type="button"
+                              (click)="seleccionarVista(rebanada.nivel)"
+                              class="rounded-lg border border-violet-200 bg-violet-50 px-2.5 py-1 text-xs font-semibold text-violet-700 hover:bg-violet-100 transition cursor-pointer flex items-center gap-1"
+                              title="Ver desglose por cada programa"
+                            >
+                              Más detalles
+                              <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
+                              </svg>
+                            </button>
+                          }
+                        </div>
+                      </div>
+
+                      <!-- Mini barra de progreso -->
+                      <div class="mt-2.5 h-1.5 w-full overflow-hidden rounded-full bg-slate-100">
+                        <div
+                          class="h-full rounded-full transition-all duration-500"
+                          [style.backgroundColor]="rebanada.color"
+                          [style.width.%]="rebanada.porcentaje"
+                        ></div>
+                      </div>
+                    </div>
+                  }
+                </div>
+              </div>
+            </div>
+          }
+        </div>
+      </section>
+
+      <!-- SECCIÓN SECCIONADA POR PROGRAMA DETALLADO (AL SELECCIONAR MAESTRÍAS O DOCTORADOS) -->
+      @if (vistaNivel() !== 'General') {
+        <section class="tarjeta animar-entrada animar-entrada-3 overflow-hidden">
+          <div class="border-b border-slate-100 px-6 py-4 flex items-center justify-between">
+            <div>
+              <h2 class="text-sm font-semibold text-slate-900">
+                Detalle específico de cada programa de {{ vistaNivel() }}
+              </h2>
+              <p class="text-xs text-slate-500">
+                Desglose de tesis aceptadas, en trámite y rechazadas para cada especialidad.
+              </p>
+            </div>
+            <span class="chip bg-violet-100 text-violet-800 text-xs font-bold">
+              {{ programasNivelActual().length }} programas
+            </span>
+          </div>
+
+          <div class="p-6">
+            @if (programasNivelActual().length === 0) {
+              <p class="text-sm text-slate-500">No hay programas de {{ vistaNivel() }} con tesis registradas.</p>
+            } @else {
+              <div class="overflow-x-auto">
+                <table class="w-full text-left text-sm text-slate-700">
+                  <thead class="bg-slate-50 text-xs uppercase tracking-wider text-slate-500 border-b border-slate-200">
+                    <tr>
+                      <th class="px-4 py-3 font-semibold">Programa de Posgrado</th>
+                      <th class="px-4 py-3 font-semibold text-center">Total</th>
+                      <th class="px-4 py-3 font-semibold text-center text-emerald-700">Aceptadas</th>
+                      <th class="px-4 py-3 font-semibold text-center text-amber-700">En Trámite</th>
+                      <th class="px-4 py-3 font-semibold text-center text-rose-700">Rechazadas</th>
+                      <th class="px-4 py-3 font-semibold text-right">Efectividad</th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-slate-100">
+                    @for (prog of programasNivelActual(); track prog.programa) {
+                      <tr class="hover:bg-slate-50/70 transition-colors">
+                        <td class="px-4 py-3.5 font-medium text-slate-900">
+                          {{ prog.programa }}
+                        </td>
+                        <td class="px-4 py-3.5 text-center font-bold">
+                          {{ prog.total }}
+                        </td>
+                        <td class="px-4 py-3.5 text-center">
+                          <span class="chip bg-emerald-50 text-emerald-700 border border-emerald-200 text-xs font-semibold">
+                            {{ prog.aceptadas }}
+                          </span>
+                        </td>
+                        <td class="px-4 py-3.5 text-center">
+                          <span class="chip bg-amber-50 text-amber-800 border border-amber-200 text-xs font-semibold">
+                            {{ prog.enTramite }}
+                          </span>
+                        </td>
+                        <td class="px-4 py-3.5 text-center">
+                          <span class="chip bg-rose-50 text-rose-700 border border-rose-200 text-xs font-semibold">
+                            {{ prog.rechazadas }}
+                          </span>
+                        </td>
+                        <td class="px-4 py-3.5 text-right font-semibold text-violet-700">
+                          {{ calcularPorcentaje(prog.aceptadas, prog.total) }}%
+                        </td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
+            }
+          </div>
+        </section>
+      }
+
+      <!-- SECCIÓN SECUNDARIA: PASTEL DE ESTADOS Y ARTÍCULOS POR TIPO -->
+      <div class="grid gap-6 lg:grid-cols-2">
+        <!-- Pastel de Estados de Tesis -->
+        <div class="tarjeta animar-entrada animar-entrada-3 overflow-hidden">
+          <div class="flex items-center gap-2.5 border-b border-slate-100 px-6 py-4">
+            <span class="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-50 text-emerald-600">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </span>
+            <div>
+              <h2 class="text-sm font-semibold text-slate-900">
+                Distribución de Estatus Académico: {{ vistaNivel() === 'General' ? 'Total Institucional' : vistaNivel() }}
+              </h2>
+              <p class="text-xs text-slate-500">Proporción de tesis según su resultado o avance.</p>
+            </div>
+          </div>
+
+          <div class="p-6">
+            @if (rebanadasEstados().length === 0) {
+              <p class="py-8 text-center text-sm text-slate-400">Sin datos de estados.</p>
+            } @else {
+              <div class="flex flex-col sm:flex-row items-center gap-6 justify-center">
+                <div class="relative w-44 h-44 shrink-0">
+                  <svg viewBox="0 0 200 200" class="w-full h-full">
+                    @for (est of rebanadasEstados(); track est.id) {
+                      <path
+                        [attr.d]="est.pathD"
+                        [attr.fill]="est.color"
+                        class="transition-opacity hover:opacity-85"
+                        [class.stroke-white]="true"
+                        [class.stroke-2]="true"
+                      />
+                    }
+                  </svg>
+                  <div class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none text-center">
+                    <span class="text-xs text-slate-400 font-semibold uppercase">Estatus</span>
+                    <span class="text-xl font-bold text-slate-800">
+                      {{ rebanadasEstados().reduce((a, b) => a + b.valor, 0) }}
+                    </span>
+                  </div>
+                </div>
+
+                <div class="space-y-2.5 w-full sm:w-auto flex-1">
+                  @for (est of rebanadasEstados(); track est.id) {
+                    <div class="flex items-center justify-between gap-4 text-sm">
+                      <div class="flex items-center gap-2">
+                        <span class="h-3 w-3 rounded-full shrink-0" [style.backgroundColor]="est.color"></span>
+                        <span class="font-medium text-slate-700">{{ est.etiqueta }}</span>
+                      </div>
+                      <span class="font-bold text-slate-900">
+                        {{ est.valor }} <span class="text-xs text-slate-400 font-normal">({{ est.porcentaje }}%)</span>
+                      </span>
+                    </div>
+                  }
+                </div>
+              </div>
+            }
+          </div>
+        </div>
+
+        <!-- Pastel de Artículos Publicados por Tipo -->
+        <div class="tarjeta animar-entrada animar-entrada-4 overflow-hidden">
+          <div class="flex flex-wrap items-center justify-between border-b border-slate-100 px-6 py-4 gap-2">
+            <div class="flex items-center gap-2.5">
+              <span class="flex h-8 w-8 items-center justify-center rounded-lg bg-sky-50 text-sky-600">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z" />
+                </svg>
+              </span>
+              <div>
+                <h2 class="text-sm font-semibold text-slate-900">Producción Científica: Publicaciones por Tipo</h2>
+                <p class="text-xs text-slate-500">Publicaciones académicas derivadas de las tesis aceptadas.</p>
+              </div>
+            </div>
+            <span class="chip bg-sky-50 text-sky-700 border border-sky-200 text-xs font-semibold">
+              {{ totalArticulos() }} artículos
+            </span>
+          </div>
+
+          <div class="p-6">
+            @if (rebanadasArticulos().length === 0) {
+              <p class="py-8 text-center text-sm text-slate-400">Sin artículos registrados.</p>
+            } @else {
+              <div class="flex flex-col sm:flex-row items-center gap-6 justify-center">
+                <div class="relative w-44 h-44 shrink-0">
+                  <svg viewBox="0 0 200 200" class="w-full h-full">
+                    @for (art of rebanadasArticulos(); track art.id) {
+                      <path
+                        [attr.d]="art.pathD"
+                        [attr.fill]="art.color"
+                        class="transition-opacity hover:opacity-85"
+                        [class.stroke-white]="true"
+                        [class.stroke-2]="true"
+                        [attr.title]="art.etiqueta + ': ' + art.valor + ' (' + art.porcentaje + '%)'"
+                      />
+                    }
+                  </svg>
+                  <div class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none text-center">
+                    <span class="text-xs text-slate-400 font-semibold uppercase">Artículos</span>
+                    <span class="text-xl font-bold text-slate-800">
+                      {{ totalArticulos() }}
+                    </span>
+                  </div>
+                </div>
+
+                <div class="space-y-3 w-full sm:w-auto flex-1">
+                  @for (art of rebanadasArticulos(); track art.id) {
+                    <div class="space-y-1">
+                      <div class="flex items-center justify-between gap-4 text-sm">
+                        <div class="flex items-center gap-2">
+                          <span class="h-3 w-3 rounded-full shrink-0" [style.backgroundColor]="art.color"></span>
+                          <span class="font-medium text-slate-700">{{ art.etiqueta }}</span>
+                        </div>
+                        <span class="font-bold text-slate-900">
+                          {{ art.valor }} <span class="text-xs text-slate-400 font-normal">({{ art.porcentaje }}%)</span>
+                        </span>
+                      </div>
+                      <div class="h-1.5 w-full overflow-hidden rounded-full bg-slate-100">
+                        <div
+                          class="h-full rounded-full transition-all duration-500"
+                          [style.backgroundColor]="art.color"
+                          [style.width.%]="art.porcentaje"
+                        ></div>
+                      </div>
+                    </div>
+                  }
+                </div>
+              </div>
+            }
+          </div>
+        </div>
+
+      </div>
+    } @else {
+      <div class="tarjeta animar-entrada animar-entrada-1 p-12 text-center text-sm text-slate-500">
+        No se pudieron cargar los indicadores.
+      </div>
+    }
+  }
+</div>
